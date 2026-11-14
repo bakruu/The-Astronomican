@@ -1,0 +1,39 @@
+# Unity generated
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+/Assets/Screenshots/
+/Assets/Screenshots.meta
+
+# IDE / OS
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.sln
+*.suo
+*.user
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+.DS_Store
+*.apk
+*.aab
+*.unitypackage
+
+# Blender backups
+*.blend1
+*.blend2
+
+# Claude Code local settings
+.claude/settings.local.json
