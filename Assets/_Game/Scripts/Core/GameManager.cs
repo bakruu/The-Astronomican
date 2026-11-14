@@ -12,7 +12,7 @@ namespace MissionForge
     /// </summary>
     public class GameManager : MonoBehaviour
     {
-        public const string GameTitle = "MISSION FORGE";
+        public const string GameTitle = "THE ASTRONOMICAN";
 
         public static GameManager I { get; private set; }
 

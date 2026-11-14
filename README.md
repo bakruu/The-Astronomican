@@ -1,4 +1,4 @@
-# Mission Forge: Space Mission Design Game
+# The Astronomican: Space Mission Design Game
 
 Built for the **NASA Space Apps Challenge 2026: [Space Mission Design Game](https://www.spaceappschallenge.org/2026/challenges/space-mission-design-game/)**.
 
