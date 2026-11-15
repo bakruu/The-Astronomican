@@ -17,6 +17,10 @@ namespace MissionForge
         LineRenderer orbitLine;
         Mode mode;
         float orbitRadius = 4.5f, orbitAngle;
+        float launchT = -1, shakeT, shakeAmp;
+        Vector3 camBase;
+        TrailRenderer trail;
+        const float LaunchTime = 2.5f;
         readonly Dictionary<Color, Material> mats = new Dictionary<Color, Material>();
 
         static readonly Color Foil = new Color(0.85f, 0.65f, 0.25f);
@@ -37,6 +41,12 @@ namespace MissionForge
             orbitLine.transform.SetParent(stage);
             orbitLine.loop = true; orbitLine.widthMultiplier = 0.03f; orbitLine.useWorldSpace = false;
             orbitLine.material = Mat(new Color(0.4f, 0.7f, 1f));
+            trail = craft.gameObject.AddComponent<TrailRenderer>();
+            trail.time = 1.2f; trail.widthMultiplier = 0.12f; trail.emitting = false;
+            trail.widthCurve = AnimationCurve.Linear(0, 1, 1, 0);
+            trail.material = Mat(new Color(1f, 0.55f, 0.15f));
+            trail.colorGradient = new Gradient { colorKeys = new[] { new GradientColorKey(new Color(1f, 0.8f, 0.3f), 0), new GradientColorKey(new Color(1f, 0.3f, 0.1f), 1) },
+                alphaKeys = new[] { new GradientAlphaKey(1, 0), new GradientAlphaKey(0, 1) } };
             Stars();
             SetMode(Mode.Title, null);
         }
@@ -44,6 +54,7 @@ namespace MissionForge
         public void SetMode(Mode m, MissionDesign d)
         {
             mode = m;
+            launchT = -1; trail.emitting = false; trail.Clear();
             if (d != null) Build(d);
             craft.gameObject.SetActive(m != Mode.Title);
             planet.gameObject.SetActive(m != Mode.Design);
@@ -70,6 +81,26 @@ namespace MissionForge
                     cam.transform.position = new Vector3(0, 6, -11); cam.transform.LookAt(Vector3.zero);
                     break;
             }
+            camBase = cam.transform.position;
+        }
+
+        /// <summary>Rocket climbs from the planet surface to orbit, leaving a flame trail.</summary>
+        public void PlayLaunch()
+        {
+            launchT = 0; orbitAngle = -Mathf.PI / 2;
+            trail.Clear(); trail.emitting = true;
+        }
+
+        public void Shake(float amp = 0.25f, float time = 0.45f) { shakeAmp = amp; shakeT = time; }
+
+        void LateUpdate()
+        {
+            if (shakeT > 0)
+            {
+                shakeT -= Time.deltaTime;
+                cam.transform.position = camBase + Random.insideUnitSphere * shakeAmp * Mathf.Clamp01(shakeT * 3);
+                if (shakeT <= 0) cam.transform.position = camBase;
+            }
         }
 
         void Update()
@@ -78,8 +109,17 @@ namespace MissionForge
             if (planet.gameObject.activeSelf) planet.Rotate(0, 6 * Time.deltaTime, 0, Space.Self);
             if (mode == Mode.Sim)
             {
-                orbitAngle += Time.deltaTime * 0.8f;
-                craft.localPosition = new Vector3(Mathf.Cos(orbitAngle), 0, Mathf.Sin(orbitAngle)) * orbitRadius;
+                float r = orbitRadius;
+                if (launchT >= 0 && launchT < LaunchTime)
+                {
+                    launchT += Time.deltaTime;
+                    float k = Mathf.SmoothStep(0, 1, launchT / LaunchTime);
+                    r = Mathf.Lerp(1.5f, orbitRadius, k);
+                    orbitAngle += Time.deltaTime * 0.8f * k; // starts straight up, then bends into orbit
+                    if (launchT >= LaunchTime) trail.emitting = false;
+                }
+                else orbitAngle += Time.deltaTime * 0.8f;
+                craft.localPosition = new Vector3(Mathf.Cos(orbitAngle), 0, Mathf.Sin(orbitAngle)) * r;
                 craft.LookAt(Vector3.zero);
             }
         }

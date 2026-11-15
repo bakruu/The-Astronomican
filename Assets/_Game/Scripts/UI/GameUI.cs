@@ -203,6 +203,59 @@ namespace MissionForge
             var launch = Btn(bh, "LAUNCH", gm.Launch, Accent, 28, -1);
             Size(launch, -1, 260);
             launch.interactable = gm.AllGo;
+
+            if (tutorialStep >= 0) Tutorial(d);
+        }
+
+        // ============================ FIRST-PLAY TUTORIAL ============================
+        static int tutorialStep; // -1 = finished/skipped (once per session)
+
+        void Tutorial(MissionDesign d)
+        {
+            // (highlight xMin, yMin, xMax, yMax, card xMin, yMin, xMax, yMax, title, body)
+            var steps = new (Rect hi, Rect card, string title, string body)[]
+            {
+                (new Rect(0, 0, 0, 0), new Rect(0.3f, 0.3f, 0.4f, 0.4f), "WELCOME, FLIGHT DIRECTOR",
+                    $"Your mission: <b>{d.scenario.title}</b>.\n{d.scenario.brief}\n\nYou have <b>${d.scenario.budget:0}M</b>. Design a spacecraft, launch it, and find out why it worked (or didn't)."),
+                (new Rect(0, 0.10f, 0.34f, 0.83f), new Rect(0.37f, 0.45f, 0.32f, 0.3f), "1 · CHOOSE PARTS",
+                    "Each tab is a team role, just like a real NASA mission team. Click a part to select it. Every choice changes mass, power, data and cost."),
+                (new Rect(0.34f, 0.10f, 0.38f, 0.83f), new Rect(0.04f, 0.35f, 0.28f, 0.3f), "2 · YOUR SPACECRAFT",
+                    "Your spacecraft is assembled live as you pick parts: bus, solar panels, antenna and instruments."),
+                (new Rect(0.72f, 0.10f, 0.28f, 0.83f), new Rect(0.37f, 0.45f, 0.32f, 0.3f), "3 · DASHBOARD",
+                    "Green bars are fine, red bars are problems. The <b>Flight Director</b> at the top always tells you the most important thing to fix next."),
+                (new Rect(0, 0, 1, 0.10f), new Rect(0.34f, 0.25f, 0.32f, 0.3f), "4 · LAUNCH",
+                    "When the review is green, press <b>LAUNCH</b>. In team mode every role must vote GO first. Then watch your mission fly and read the report to learn what to improve."),
+            };
+            var s = steps[tutorialStep];
+            var layer = Node("Tutorial", root); Place(layer, 0, 0, 1, 1);
+            var dim = new Color(0, 0, 0, 0.85f);
+            if (s.hi.width <= 0) Place(Panel(layer, dim).rectTransform, 0, 0, 1, 1);
+            else
+            {
+                // four panels around the highlighted area = a "spotlight" cut-out
+                Place(Panel(layer, dim).rectTransform, 0, 0, 1, s.hi.yMin);
+                Place(Panel(layer, dim).rectTransform, 0, s.hi.yMax, 1, 1);
+                Place(Panel(layer, dim).rectTransform, 0, s.hi.yMin, s.hi.xMin, s.hi.yMax);
+                Place(Panel(layer, dim).rectTransform, s.hi.xMax, s.hi.yMin, 1, s.hi.yMax);
+                // thin accent border around the spotlight
+                var frame = Place(Node("Frame", layer), s.hi.xMin, s.hi.yMin, s.hi.xMax, s.hi.yMax);
+                foreach (var (a, b) in new[] { (new Vector2(0, 0), new Vector2(1, 0)), (new Vector2(0, 1), new Vector2(1, 1)), (new Vector2(0, 0), new Vector2(0, 1)), (new Vector2(1, 0), new Vector2(1, 1)) })
+                {
+                    var line = Panel(frame, Accent, "Border"); line.raycastTarget = false;
+                    var rt = line.rectTransform; rt.anchorMin = a; rt.anchorMax = b;
+                    rt.sizeDelta = new Vector2(a.x == b.x ? 4 : 0, a.y == b.y ? 4 : 0); rt.anchoredPosition = Vector2.zero;
+                }
+            }
+            var card = Panel(layer, Card, "TutorialCard");
+            Place(card.rectTransform, s.card.xMin, s.card.yMin, s.card.xMax, s.card.yMax);
+            var v = Place(VBox(card.transform, 12, 28), 0, 0, 1, 1);
+            Size(Label(v, s.title, 28, TextAnchor.MiddleLeft, Accent, FontStyle.Bold), 40);
+            Label(v, s.body, 20, TextAnchor.UpperLeft);
+            var spacer = Node("Spacer", v); spacer.gameObject.AddComponent<LayoutElement>().flexibleHeight = 1;
+            var row = HBox(v, 12, 52);
+            Btn(row, "SKIP", () => { tutorialStep = -1; ShowDesign(); }, Card, 20, 52);
+            bool last = tutorialStep == steps.Length - 1;
+            Btn(row, last ? "LET'S GO" : $"NEXT  ({tutorialStep + 1}/{steps.Length})", () => { tutorialStep = last ? -1 : tutorialStep + 1; ShowDesign(); }, Accent, 20, 52);
         }
 
         void Changed()
@@ -289,14 +342,36 @@ namespace MissionForge
             var next = Btn(bottom, "SKIP >", null, Card, 22, -1);
             Place((RectTransform)next.transform, 0.80f, 0.18f, 0.98f, 0.82f);
 
+            // full-screen flash for events (red = bad, green = lucky)
+            var flash = Place(Panel(root, new Color(0, 0, 0, 0), "Flash").rectTransform, 0, 0, 1, 1).GetComponent<Image>();
+            flash.raycastTarget = false;
+
             StartCoroutine(Play());
+
+            IEnumerator Flash(Color c)
+            {
+                for (float t = 0.5f; t > 0; t -= Time.deltaTime) { flash.color = new Color(c.r, c.g, c.b, t * 0.5f); yield return null; }
+                flash.color = new Color(0, 0, 0, 0);
+            }
 
             IEnumerator Play()
             {
                 bool skip = false;
                 next.onClick.AddListener(() => skip = true);
+                if (r.launched)
+                {
+                    gm.view.PlayLaunch();
+                    gm.view.Shake(0.15f, 1.2f);
+                    status.text = "3... 2... 1... LIFTOFF!";
+                    for (float t = 0; t < 2.6f && !skip; t += Time.deltaTime) yield return null;
+                }
                 foreach (var st in r.steps)
                 {
+                    if (st.log != null && !skip)
+                    {
+                        if (st.bad) { gm.view.Shake(); StartCoroutine(Flash(Bad)); }
+                        else if (st.log.StartsWith("Lucky")) StartCoroutine(Flash(Good));
+                    }
                     float ratio = r.target > 0 ? st.science / r.target : 0;
                     status.text = $"Day {st.day}/{d.scenario.durationDays}    Science {st.science:0.#} / {r.target:0}    Data home {st.dataSent:0} GB";
                     Place(fill.rectTransform, 0, 0, Mathf.Clamp01(ratio), 1);
