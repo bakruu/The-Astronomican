@@ -40,7 +40,7 @@ namespace MissionForge
             gm.view.SetMode(SpacecraftView.Mode.Title, null);
             var box = Place(VBox(root, 18), 0.06f, 0.15f, 0.45f, 0.85f);
             box.GetComponent<VerticalLayoutGroup>().childAlignment = TextAnchor.MiddleLeft;
-            Size(Label(box, GameManager.GameTitle, 72, TextAnchor.MiddleLeft, Accent, FontStyle.Bold), 100);
+            Size(Label(box, GameManager.GameTitle, 72, TextAnchor.LowerLeft, Accent, FontStyle.Bold), 170);
             Size(Label(box, "Design it. Launch it. Learn why it worked (or didn't).", 26, TextAnchor.MiddleLeft, Muted), 50);
             Size(Label(box, "Play alone or as a mission team of up to 4: Launch, Spacecraft, Ground & Comms, Science.", 20, TextAnchor.MiddleLeft, Muted), 60);
             Btn(box, "SOLO MISSION", () => { gm.players = 1; ShowScenarios(); }, Accent, 24, 64);

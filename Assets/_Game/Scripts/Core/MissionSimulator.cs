@@ -173,7 +173,10 @@ namespace MissionForge
                 r.grade = "B";
                 r.lessons.Add("Over budget: the review board capped your grade at B. Great science doesn't excuse a cost overrun.");
             }
-            if (r.lessons.Count == 0) r.lessons.Add("Clean design! Try a cheaper or more ambitious version and compare.");
+            if (r.lessons.Count == 0)
+                r.lessons.Add(r.SuccessRatio >= 1f
+                    ? "Clean design! Try a cheaper or more ambitious version and compare."
+                    : "The design was sound, but space was not kind: failures and storms cost science. Margins help: a second instrument, more power, or a station network.");
         }
     }
 }
