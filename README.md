@@ -73,6 +73,7 @@ To add a model, export an FBX named after a part id (e.g. `ins_spec.fbx`) or `pl
 ## Data & resources
 
 Part values are simplified but kept in realistic ranges, based on the challenge resources: NASA *CubeSat 101*, the NASA Mission Design Lab subsystem breakdown, *Design and Develop Science Missions* (launch, space, ground and user segments) and JPL Concept Maturity Levels. The real missions referenced (Landsat 9, Lunar Trailblazer, LRO, MRO/SHARAD, Hubble/JWST) are used for comparison only.
+Code developed with the help of Claude Code (Anthropic)
 
 NASA does not endorse this project.
 
