@@ -72,7 +72,7 @@ namespace MissionForge
                 desc="Giant 34-70 m dishes. Required beyond Earth orbit." },
 
             // ---------- INSTRUMENTS (payload) ----------
-            new Part { id="ins_rgb", cat=Category.Instrument, name="Color camera", sci=SciType.EarthObs, mass=0.5f, power=3, cost=0.3f, dataGBday=2, science=12, pointingReq=1,
+            new Part { id="ins_rgb", cat=Category.Instrument, name="Color camera", sci=SciType.EarthObs, mass=0.5f, power=3, cost=0.3f, dataGBday=1, science=14, pointingReq=1,
                 desc="Simple color images of the surface." },
             new Part { id="ins_ms", cat=Category.Instrument, name="Multispectral imager", sci=SciType.EarthObs, mass=3, power=12, cost=2.5f, dataGBday=10, science=30, pointingReq=2,
                 desc="Sees many colors incl. infrared: plant health, water, ice." },
@@ -104,7 +104,7 @@ namespace MissionForge
             new Orbit { id=OrbitId.Lunar, name="Lunar orbit", radiation=0.5f, eclipseMin=47, sunFraction=0.7f, contactMinPerDay=480, rangeFactor=0.08f, needsDeepSpace=true,
                 desc="Around the Moon. Needs deep-space radio and the DSN.",
                 bonus = { [SciType.Composition]=1.5f, [SciType.Subsurface]=1.3f, [SciType.EarthObs]=0.2f } },
-            new Orbit { id=OrbitId.Mars, name="Mars orbit", radiation=0.6f, solarFactor=0.43f, eclipseMin=40, sunFraction=0.65f, contactMinPerDay=480, rangeFactor=0.03f, needsDeepSpace=true,
+            new Orbit { id=OrbitId.Mars, name="Mars orbit", radiation=0.6f, solarFactor=0.43f, eclipseMin=40, sunFraction=0.65f, contactMinPerDay=480, rangeFactor=0.04f, needsDeepSpace=true,
                 desc="Sunlight is only 43% of Earth's. Data trickles home slowly.",
                 bonus = { [SciType.Composition]=1.6f, [SciType.Subsurface]=1.8f, [SciType.Fields]=1.3f, [SciType.EarthObs]=0f } },
         };
@@ -130,7 +130,7 @@ namespace MissionForge
             new Scenario { id="forest", title="Forest Watch", difficulty="Easy",
                 brief="Monitor deforestation and crop health around the world for one year. A university team with a small budget.",
                 required = new[]{ SciType.EarthObs }, allowedOrbits = new[]{ OrbitId.LEO, OrbitId.SSO, OrbitId.GEO },
-                budget=12, durationDays=365, targetScience=35,
+                budget=12, durationDays=365, targetScience=30,
                 realMission="Landsat 9 / PlanetScope", realMissionNote="Landsat flies a multispectral imager in sun-synchronous orbit; Planet uses fleets of CubeSats." },
             new Scenario { id="moonice", title="Lunar Ice Hunter", difficulty="Medium",
                 brief="Find water ice in the Moon's shadowed craters, a key resource for future astronauts.",
@@ -140,7 +140,7 @@ namespace MissionForge
             new Scenario { id="marsice", title="Buried Ice of Mars", difficulty="Hard",
                 brief="Map ice layers beneath the Martian surface for one Mars year.",
                 required = new[]{ SciType.Subsurface, SciType.Composition }, allowedOrbits = new[]{ OrbitId.Mars },
-                budget=450, durationDays=687, targetScience=90,
+                budget=300, durationDays=687, targetScience=95,
                 realMission="Mars Reconnaissance Orbiter (SHARAD)", realMissionNote="MRO carries the SHARAD subsurface radar and a high-gain antenna to send its huge data volume home." },
             new Scenario { id="sandbox", title="Sandbox", difficulty="Free",
                 brief="No objective, huge budget. Experiment with any combination and see what happens.",

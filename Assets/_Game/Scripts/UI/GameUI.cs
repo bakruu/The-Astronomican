@@ -148,7 +148,18 @@ namespace MissionForge
             // ---------- right: dashboard ----------
             var right = Place(Panel(root, Bg, "Right").rectTransform, 0.72f, 0.10f, 1f, 0.93f);
             var dash = ScrollList(right, 10, 16);
-            Size(Label(dash, "MISSION DASHBOARD", 22, TextAnchor.MiddleLeft, Accent, FontStyle.Bold), 32);
+            // Flight director hint: the most important open problem, one click to the role that owns it
+            var next = d.checks.Where(c => !c.ok).OrderBy(c => c.critical ? 0 : 1).FirstOrDefault();
+            if (next != null)
+            {
+                Color nc = next.critical ? Bad : Warn;
+                Label(dash, $"<color={Hex(nc)}><b>FLIGHT DIRECTOR · NEXT STEP</b></color>\n<b>{next.title}</b>\n<size=16>{next.why}</size>", 17, TextAnchor.UpperLeft);
+                var owner = next.owner;
+                if (owner != tab)
+                    Btn(dash, $"Open {GameDatabase.RoleName(owner)} >", () => { tab = owner; leftScroll = Vector2.up; ShowDesign(); }, Card, 17, 40);
+            }
+            else Label(dash, $"<color={Hex(Good)}><b>FLIGHT DIRECTOR</b></color>\n<size=16>All checks green. Launch, or try a cheaper design for a higher score.</size>", 17, TextAnchor.UpperLeft);
+            Size(Label(dash, "MISSION DASHBOARD", 22, TextAnchor.MiddleLeft, Accent, FontStyle.Bold), 36);
             Bar(dash, "Mass vs rocket", d.mass, d.launchCapacity, $"{d.mass:0.#} / {d.launchCapacity:0} kg", d.launchCapacity > 0 && d.mass <= d.launchCapacity);
             Bar(dash, "Mass vs structure", d.mass, d.busMaxMass, $"{d.mass:0.#} / {d.busMaxMass:0} kg", d.mass <= d.busMaxMass);
             Bar(dash, "Power used / made", d.powerUse, d.powerGen, $"{d.powerUse:0} / {d.powerGen:0} W", d.powerGen >= d.powerUse);
@@ -325,7 +336,18 @@ namespace MissionForge
 
             var right = Place(Panel(root, Bg).rectTransform, 0.72f, 0.10f, 1f, 0.93f);
             var rv = ScrollList(right, 10, 16);
-            Size(Label(rv, "WHY IT WENT THIS WAY", 22, TextAnchor.MiddleLeft, Accent, FontStyle.Bold), 32);
+            if (r.ideal > 0 && r.launched && !r.lost)
+            {
+                Size(Label(rv, "WHERE YOUR SCIENCE WENT", 22, TextAnchor.MiddleLeft, Accent, FontStyle.Bold), 32);
+                Label(rv, $"A perfect mission with this payload: <b>{r.ideal:0}</b> pts. You got <b>{r.science:0.#}</b>.", 17, TextAnchor.UpperLeft, Muted);
+                if (r.factors.Count == 0) Label(rv, $"<color={Hex(Good)}>No losses. Every subsystem did its job.</color>", 17);
+                foreach (var f in r.factors.OrderBy(f => f.kept))
+                {
+                    Bar(rv, f.name, f.kept, 1, $"{f.kept:P0} kept", f.kept >= 0.8f);
+                    Label(rv, f.tip, 15, TextAnchor.UpperLeft, Muted);
+                }
+            }
+            Size(Label(rv, "WHY IT WENT THIS WAY", 22, TextAnchor.MiddleLeft, Accent, FontStyle.Bold), 40);
             foreach (var l in r.lessons) Label(rv, "- " + l, 18, TextAnchor.UpperLeft);
             Size(Label(rv, "REAL NASA MISSION", 22, TextAnchor.MiddleLeft, Accent, FontStyle.Bold), 40);
             Label(rv, $"<b>{d.scenario.realMission}</b>\n<color={Hex(Muted)}>{d.scenario.realMissionNote}</color>", 18, TextAnchor.UpperLeft);
