@@ -37,3 +37,6 @@
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Burst/WebGL build leftovers
+/[Dd]ata/
